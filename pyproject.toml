@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
     "grpcio>=1.76.0",
-    "protobuf>=5,<7",
+    "protobuf>=5,<8",
     "aiohttp>=3.9",
 ]
 
