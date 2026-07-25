@@ -15,17 +15,18 @@ Protocol code was extracted from those integrations (MIT). Thanks to
 
 ## Status
 
-`0.1.0a4` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
+`0.1.0a5` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
 `get_states`, `ExecCommandWithAuth` (fresh `GetSessionRandom` per write), and
 nonce-gated TV `read_application_list` / `read_resource` (AES-GCM; needs
-`session_key` + `[crypto]`).
+`session_key` + `[crypto]`). Public root also re-exports OAuth/Seeds helpers,
+capability helpers, and TV constants used by HA consumers.
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Install
 
 ```bash
-pip install pybravia-connect==0.1.0a4
+pip install pybravia-connect==0.1.0a5
 ```
 
 For local development:
@@ -45,17 +46,34 @@ pip install "pybravia-connect[crypto]"
 
 ```python
 from pybravia_connect import (
+    APPLICATION_LIST_PATH,
     BraviaConnectClient,
     DEFAULT_THEATRE_PORT,
+    ZEROCONF_TYPE,
     async_complete_oauth_flow,
-    start_oauth_login,
-    select_device,
+    async_credentials_from_oauth,
+    async_exchange_oauth_redirect,
+    async_get_device_states,
+    async_get_devices,
+    async_list_oauth_devices,
+    async_refresh_access_token,
     discover_grpc_port,
+    enum_values_from_capability,
+    get_device_states,
+    get_devices,
+    get_session_keys,
+    image_content_type,
+    int_range_from_capability,
+    is_int_capability,
+    refresh_credentials,
+    select_device,
+    start_oauth_login,
 )
 ```
 
 Sync gRPC client (run in an executor from asyncio). Async credentials use
-`aiohttp.ClientSession`.
+`aiohttp.ClientSession`. Sync Seeds helpers (`refresh_credentials`,
+`get_devices`, …) are for scripts; prefer the `async_*` variants from HA.
 
 ## Live smoke
 
