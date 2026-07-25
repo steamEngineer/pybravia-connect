@@ -18,13 +18,14 @@ _EXPECTED_EXPORTS = (
     "image_content_type",
     "int_range_from_capability",
     "is_int_capability",
+    "refresh_access_token",
     "refresh_credentials",
 )
 
 
 def test_version() -> None:
     assert isinstance(pybravia_connect.__version__, str)
-    assert pybravia_connect.__version__ == "0.1.0a6"
+    assert pybravia_connect.__version__ == "0.1.0a7"
 
 
 def test_public_exports() -> None:

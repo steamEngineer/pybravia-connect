@@ -22,6 +22,7 @@ from .credentials import (
     parse_authorization_code,
     parse_credentials_json,
     parse_oauth_redirect_state,
+    refresh_access_token,
     refresh_credentials,
     select_device,
     select_speaker_device,
@@ -53,7 +54,7 @@ from .wire.capabilities import (
 from .wire.notify import APPLICATION_LIST_PATH
 from .wire.resources import image_content_type
 
-__version__ = "0.1.0a6"
+__version__ = "0.1.0a7"
 
 __all__ = [
     "APPLICATION_LIST_PATH",
@@ -95,6 +96,7 @@ __all__ = [
     "parse_authorization_code",
     "parse_credentials_json",
     "parse_oauth_redirect_state",
+    "refresh_access_token",
     "refresh_credentials",
     "scan_open_ports",
     "select_device",
