@@ -15,7 +15,7 @@ Protocol code was extracted from those integrations (MIT). Thanks to
 
 ## Status
 
-`0.1.0a3` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
+`0.1.0a4` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
 `get_states`, `ExecCommandWithAuth` (fresh `GetSessionRandom` per write), and
 nonce-gated TV `read_application_list` / `read_resource` (AES-GCM; needs
 `session_key` + `[crypto]`).
@@ -25,7 +25,7 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 ## Install
 
 ```bash
-pip install pybravia-connect==0.1.0a3
+pip install pybravia-connect==0.1.0a4
 ```
 
 For local development:

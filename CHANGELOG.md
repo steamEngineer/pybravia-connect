@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a4] - 2026-07-25
+
 ### Changed
 
 - PyPI metadata (classifiers, project URLs, PEP 639 license) and hatch path
@@ -15,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `build`/`twine check`.
 - Tag publish workflow asserts tag==wheel version, creates a GitHub Release from
   the changelog, and drops ad-hoc `workflow_dispatch` publishes.
+- Allow `protobuf` `>=5,<8` (was `<7`).
+- Bump GitHub Actions: `actions/checkout` v7.0.1, `actions/setup-python` v7.0.0,
+  `softprops/action-gh-release` v3.0.2, `release-drafter/release-drafter` v7.6.0.
 
 ### Added
 
@@ -43,7 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public alpha: OAuth credentials helpers, connect/handshake,
   `StartNotifyStates`, `GetCapabilities`, and `ExecCommandWithAuth`.
 
-[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a3...HEAD
+[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a4...HEAD
+[0.1.0a4]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a3...v0.1.0a4
 [0.1.0a3]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a2...v0.1.0a3
 [0.1.0a2]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a1...v0.1.0a2
 [0.1.0a1]: https://github.com/steamEngineer/pybravia-connect/releases/tag/v0.1.0a1
