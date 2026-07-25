@@ -39,9 +39,10 @@ from .wire.exec_command import (
 )
 from .wire.get_states_auth import sign_get_states_request_body
 from .wire.get_states_request import (
-    build_small_get_states_with_auth_request,
-    extract_auth_token_from_states_response,
+    build_get_states_with_auth_request,
+    extract_session_tokens_from_states_response,
 )
+from .wire.get_states_response import parse_get_states_response
 from .wire.notify import parse_notify_message
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,7 +51,6 @@ _SERVICE = "jp.co.sony.hes.ssh.controldevice.v1.ControlDeviceService"
 _EXEC_METHOD = f"/{_SERVICE}/ExecCommandWithAuth"
 _GET_STATES_METHOD = f"/{_SERVICE}/GetStatesWithAuth"
 _NOTIFY_METHOD = f"/{_SERVICE}/StartNotifyStates"
-_MUTEX_PATH = "client_control.mutex.any"
 
 _CHANNEL_OPTIONS = (
     ("grpc.keepalive_time_ms", 2147483647),  # effectively off
@@ -144,30 +144,45 @@ class BraviaConnectClient:
         self._session_random = resp.session_random
         if resp.auth_token:
             self._auth_token = resp.auth_token
+        if resp.session_id:
+            self._session_id = resp.session_id
         if not self._session_random:
             raise AuthError("GetSessionRandom returned no session_random")
 
     def _apply_get_states_tokens(self, raw: bytes) -> None:
-        token = extract_auth_token_from_states_response(raw)
-        if token:
-            self._auth_token = token
+        """Update rolling auth from GetStates RX; keep 8-byte session_random only."""
+        session_random, auth_token, session_id = (
+            extract_session_tokens_from_states_response(raw)
+        )
+        if auth_token:
+            self._auth_token = auth_token
+        # Theatre overloads field 2 with states blobs; ignore non-8-byte values.
+        if session_random is not None:
+            self._session_random = session_random
+        if session_id:
+            self._session_id = session_id
 
-    def _mutex_preflight(self, timeout: float = 8.0) -> bool:
-        """HMAC-signed mutex GetStates (Theatre firmware requires this before exec)."""
-        if self._channel is None or self._session_random is None:
-            return False
-        if len(self._session_random) != 8:
-            # TV session_random is longer; mutex small-request is Theatre-shaped.
-            return True
-        preview = build_small_get_states_with_auth_request(
-            _MUTEX_PATH,
+    def _get_states_unlocked(
+        self,
+        paths: list[str],
+        *,
+        timeout: float = 8.0,
+    ) -> dict[str, Any]:
+        """Signed GetStatesWithAuth; caller must hold ``_session_lock``."""
+        if self._channel is None:
+            raise ConnectionError("not connected")
+        if self._session_random is None:
+            self._refresh_session_random(timeout=timeout)
+        assert self._session_random is not None
+        preview = build_get_states_with_auth_request(
+            paths,
             session_random=self._session_random,
             session_id=self._session_id,
             auth_token=b"\x00" * 32,
         )
         token = sign_get_states_request_body(self._hmac_key, preview)
-        req = build_small_get_states_with_auth_request(
-            _MUTEX_PATH,
+        req = build_get_states_with_auth_request(
+            paths,
             session_random=self._session_random,
             session_id=self._session_id,
             auth_token=token,
@@ -175,12 +190,30 @@ class BraviaConnectClient:
         try:
             raw = self._raw_unary(_GET_STATES_METHOD)(req, timeout=timeout)
         except grpc.RpcError as err:
-            _LOGGER.debug("mutex preflight failed: %s", err.code())
-            return False
+            raise ConnectionError(f"GetStates failed: {err.code()}") from err
         if not raw:
-            return False
+            raise ConnectionError("GetStates returned empty body")
         self._apply_get_states_tokens(raw)
-        return True
+        return parse_get_states_response(raw)
+
+    def get_states(
+        self,
+        paths: list[str] | None = None,
+        *,
+        timeout: float = 8.0,
+    ) -> dict[str, Any]:
+        """Signed bulk GetStatesWithAuth; defaults to safe capability paths."""
+        if self._stub is None:
+            raise ConnectionError("not connected")
+        with self._session_lock:
+            use_paths = (
+                list(paths) if paths is not None else list(self._safe_get_states_paths)
+            )
+            if not use_paths:
+                raise ConnectionError(
+                    "no GetStates paths; call get_capabilities() first or pass paths"
+                )
+            return self._get_states_unlocked(use_paths, timeout=timeout)
 
     def close(self) -> None:
         """Stop notify and close the channel."""
@@ -226,16 +259,16 @@ class BraviaConnectClient:
         confirm_prerequisite: str | None = None,
         timeout: float = 8.0,
     ) -> bool:
-        """Set *path* to *value*, choosing the wire type from the capability."""
+        """Set *path* to *value*, choosing the wire type from the capability.
+
+        Fresh ``GetSessionRandom`` then HMAC-signed ``ExecCommandWithAuth``.
+        Volume/mute writes are no-ops while the control unit is powered off —
+        wake with ``exec_command("power", True)`` first when needed.
+        """
         if self._stub is None:
             raise ConnectionError("not connected")
         with self._session_lock:
             self._refresh_session_random(timeout=timeout)
-            # Theatre (8-byte session_random): mutex×2 before exec, like BRAVIA Connect.
-            if len(self._session_random or b"") == 8:
-                for _ in range(2):
-                    if not self._mutex_preflight(timeout=timeout):
-                        _LOGGER.debug("mutex preflight incomplete for %s", path)
             if confirm_prerequisite is not None:
                 self._exec(
                     f"{path}.confirm_prerequisite",
@@ -263,7 +296,11 @@ class BraviaConnectClient:
             **value_kwargs,
         )
         call = self._raw_unary(_EXEC_METHOD)
-        raw = call(req, timeout=timeout)
+        try:
+            raw = call(req, timeout=timeout)
+        except grpc.RpcError as err:
+            _LOGGER.debug("ExecCommand error: %s", err.code())
+            return False
         if parse_exec_response(raw):
             return True
         # Some paths return an empty body; confirm via notify cache when present.

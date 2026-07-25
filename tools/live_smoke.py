@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Live smoke: connect → capabilities → notify (+ optional exec) on a real device.
+"""Live smoke: connect → capabilities → get_states → volume write → read-back.
 
 Env:
   BRAVIA_HOST          device IP (required)
@@ -8,12 +8,15 @@ Env:
 
 Optional:
   BRAVIA_EXEC_PATH     field to write (default: volume)
-  BRAVIA_EXEC_VALUE    int/bool/string value (default: 7 for volume)
+  BRAVIA_EXEC_VALUE    int/bool/string value (default: toggle volume ±1)
   BRAVIA_SKIP_EXEC     set to 1 to skip the write attempt
 
-Exit 0 when connect + GetCapabilities + at least one notify delta succeed.
-Exec success is reported but does not fail the smoke (Theatre writes may need
-the fuller GetStates app-sequence that lands in a later milestone).
+Stop the Home Assistant bravia_quad gRPC session before running — dual key_id
+sessions on the same HT-A9M2 flake ConfirmKeys / exec.
+
+Exit 0 when connect + GetCapabilities succeed and (unless BRAVIA_SKIP_EXEC=1)
+the exec path changes state confirmed by get_states read-back. Exec that
+reports ok but leaves state unchanged fails the smoke.
 
 Does not import homeassistant.
 """
@@ -62,39 +65,72 @@ def main() -> int:
         print(f"notify {path}={value!r}")
 
     client.start_notify(on_delta)
-    deadline = time.monotonic() + 8.0
+    deadline = time.monotonic() + 5.0
     while time.monotonic() < deadline and not seen:
         time.sleep(0.25)
 
-    if not seen:
-        print("no notify deltas received (capabilities still ok)", file=sys.stderr)
+    if os.environ.get("BRAVIA_SKIP_EXEC") == "1":
         client.close()
-        # Handshake + schema are enough for smoke when the stream is quiet.
+        print("done (connect + capabilities; exec skipped)")
         return 0
 
-    if os.environ.get("BRAVIA_SKIP_EXEC") != "1":
-        path = os.environ.get("BRAVIA_EXEC_PATH", "volume")
-        if "BRAVIA_EXEC_VALUE" in os.environ:
-            raw = os.environ["BRAVIA_EXEC_VALUE"]
-            if raw.lower() in ("true", "false"):
-                value: object = raw.lower() == "true"
-            else:
-                try:
-                    value = int(raw)
-                except ValueError:
-                    value = raw
-        else:
-            value = 7
-        print(f"exec {path}={value!r}")
+    path = os.environ.get("BRAVIA_EXEC_PATH", "volume")
+    # Volume/mute writes no-op while the control unit is off; wake first.
+    if path in ("volume", "mute"):
         try:
-            ok = client.exec_command(path, value)
-            print(f"exec ok={ok}")
+            powered = client.get_states(["power"]).get("power")
+            print(f"get_states power={powered!r}")
+            if powered is not True:
+                print("exec power=True (required before volume/mute writes)")
+                client.exec_command("power", True)
+                time.sleep(0.5)
         except Exception as exc:  # noqa: BLE001
-            print(f"exec error: {exc}")
-        time.sleep(1.0)
+            print(f"power preflight skipped: {exc}")
 
+    before = client.get_states([path])
+    before_val = before.get(path)
+    print(f"get_states before {path}={before_val!r}")
+
+    if "BRAVIA_EXEC_VALUE" in os.environ:
+        raw = os.environ["BRAVIA_EXEC_VALUE"]
+        if raw.lower() in ("true", "false"):
+            value: object = raw.lower() == "true"
+        else:
+            try:
+                value = int(raw)
+            except ValueError:
+                value = raw
+    elif isinstance(before_val, int):
+        value = before_val + 1 if before_val < 50 else before_val - 1
+    elif isinstance(before_val, bool):
+        value = not before_val
+    else:
+        value = 7
+
+    print(f"exec {path}={value!r}")
+    try:
+        ok = client.exec_command(path, value)
+        print(f"exec ok={ok}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"exec error: {exc}", file=sys.stderr)
+        client.close()
+        return 1
+
+    time.sleep(0.5)
+    after = client.get_states([path])
+    after_val = after.get(path)
+    print(f"get_states after {path}={after_val!r}")
     client.close()
-    print("done (connect + capabilities + notify ok)")
+
+    if after_val != value:
+        print(
+            f"FAIL: expected {path}={value!r} after exec, got {after_val!r} "
+            f"(before={before_val!r}, exec_ok={ok})",
+            file=sys.stderr,
+        )
+        return 1
+
+    print("done (volume/state change confirmed via get_states)")
     return 0
 
 

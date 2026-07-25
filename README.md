@@ -15,10 +15,9 @@ Protocol code was extracted from those integrations (MIT). Thanks to
 
 ## Status
 
-`0.1.0a1` — MVP: Sony Seeds OAuth helpers, connect/handshake, `StartNotifyStates`,
-`ExecCommandWithAuth`, GetCapabilities. GetStates wire codecs are included;
-`BraviaConnectClient.get_states` and app-list/resources arrive in a later
-milestone.
+`0.1.0a2` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
+`get_states`, and `ExecCommandWithAuth` (fresh `GetSessionRandom` per write).
+App-list/resources arrive in a later milestone.
 
 ## Install
 
@@ -51,10 +50,11 @@ export BRAVIA_CREDENTIALS=/path/to/keys.json
 python tools/live_smoke.py
 ```
 
-Validated on HT-A9M2: connect/handshake, GetCapabilities, and StartNotifyStates.
-`ExecCommandWithAuth` wire encoding matches live-device captures (unit-tested);
-some Theatre firmwares also need the fuller GetStates app-sequence before writes
-take effect — that lands with `get_states` in a later milestone.
+Validated on HT-A9M2: connect/handshake, GetCapabilities, StartNotifyStates,
+`get_states`, and volume writes via `exec_command` while powered on. Volume/mute
+writes are no-ops when the control unit is off — live smoke wakes `power` first.
+Stop any Home Assistant `bravia_quad` session on the same device before smoke
+(dual `key_id` sessions flake).
 
 ## Regenerating protobuf stubs
 

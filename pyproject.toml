@@ -1,6 +1,6 @@
 [project]
 name = "pybravia-connect"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "HA-agnostic Sony BRAVIA Connect ControlDeviceService client"
 readme = "README.md"
 license = { text = "MIT" }

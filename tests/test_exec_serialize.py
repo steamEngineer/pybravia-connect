@@ -31,7 +31,6 @@ def test_exec_command_is_serialized() -> None:
 
     with (
         patch.object(client, "_refresh_session_random", side_effect=slow_refresh),
-        patch.object(client, "_mutex_preflight", return_value=True),
         patch.object(client, "_exec", return_value=True),
     ):
         threads = [threading.Thread(target=worker) for _ in range(2)]

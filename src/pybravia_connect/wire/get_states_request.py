@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .codec import encode_varint
+from .codec import decode_field, encode_varint
 
 
 def build_get_states_with_auth_request(
@@ -96,3 +96,40 @@ def extract_auth_token_from_states_response(raw: bytes) -> bytes | None:
     if idx < 0 or idx + 34 > len(raw):
         return None
     return raw[idx + 2 : idx + 34]
+
+
+def extract_session_tokens_from_states_response(
+    raw: bytes,
+) -> tuple[bytes | None, bytes | None, str | None]:
+    """
+    Hand-parse GetStatesWithAuth response tokens (no fat response pb2).
+
+    Top-level fields (nominal schema):
+      1 states blob (ignored here)
+      2 session_random — only meaningful when exactly 8 bytes
+      3 session_id
+      4 auth_token (32 B)
+
+    Also accepts a trailing field-2 ``\\x12\\x20`` + 32 B auth fallback used by
+    some Theatre response shapes. Field 4 overwrites that fallback when present.
+    """
+    session_random: bytes | None = None
+    auth_token = extract_auth_token_from_states_response(raw)
+    session_id: str | None = None
+
+    offset = 0
+    while offset < len(raw):
+        field, offset = decode_field(raw, offset)
+        if not field:
+            break
+        field_num, wire_type, payload = field
+        if wire_type != 2 or not isinstance(payload, bytes):
+            continue
+        if field_num == 2 and len(payload) == 8:
+            session_random = payload
+        elif field_num == 3:
+            session_id = payload.decode("utf-8", errors="replace")
+        elif field_num == 4 and len(payload) == 32:
+            auth_token = payload
+
+    return session_random, auth_token, session_id
