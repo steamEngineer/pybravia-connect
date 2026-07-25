@@ -23,6 +23,12 @@ nonce-gated TV `read_application_list` / `read_resource` (AES-GCM; needs
 ## Install
 
 ```bash
+pip install pybravia-connect==0.1.0a3
+```
+
+For local development:
+
+```bash
 pip install -e ".[dev]"
 ```
 
