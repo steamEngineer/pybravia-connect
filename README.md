@@ -8,16 +8,72 @@ that speak BRAVIA Connect (for example
 [bravia-quad-homeassistant](https://github.com/steamEngineer/bravia-quad-homeassistant)
 and
 [bravia-tv-grpc-homeassistant](https://github.com/braviafanboy/bravia-tv-grpc-homeassistant))
-are expected to depend on this package once the protocol layer is extracted
-here.
+can depend on this package once cut over.
+
+Protocol code was extracted from those integrations (MIT). Thanks to
+@steamEngineer and @braviafanboy.
 
 ## Status
 
-Scaffold only (`0.0.0`). Protocol extraction is in progress.
+`0.1.0a1` — MVP: Sony Seeds OAuth helpers, connect/handshake, `StartNotifyStates`,
+`ExecCommandWithAuth`, GetCapabilities. GetStates wire codecs are included;
+`BraviaConnectClient.get_states` and app-list/resources arrive in a later
+milestone.
+
+## Install
+
+```bash
+pip install -e ".[dev]"
+```
+
+## Public API (sketch)
+
+```python
+from pybravia_connect import (
+    BraviaConnectClient,
+    DEFAULT_THEATRE_PORT,
+    async_complete_oauth_flow,
+    start_oauth_login,
+    select_device,
+    discover_grpc_port,
+)
+```
+
+Sync gRPC client (run in an executor from asyncio). Async credentials use
+`aiohttp.ClientSession`.
+
+## Live smoke
+
+```bash
+export BRAVIA_HOST=192.168.x.x
+export BRAVIA_PORT=55051          # Theatre default; TVs may need discovery
+export BRAVIA_CREDENTIALS=/path/to/keys.json
+python tools/live_smoke.py
+```
+
+Validated on HT-A9M2: connect/handshake, GetCapabilities, and StartNotifyStates.
+`ExecCommandWithAuth` wire encoding matches live-device captures (unit-tested);
+some Theatre firmwares also need the fuller GetStates app-sequence before writes
+take effect — that lands with `get_states` in a later milestone.
+
+## Regenerating protobuf stubs
+
+```bash
+python -m grpc_tools.protoc -Isrc/pybravia_connect/proto \
+  --python_out=src/pybravia_connect/proto \
+  --grpc_python_out=src/pybravia_connect/proto \
+  src/pybravia_connect/proto/bravia_control.proto
+```
+
+Then re-apply two manual patches:
+
+1. Make the `pb2_grpc` import relative: `from . import bravia_control_pb2`.
+2. Register the descriptor in a **private** pool, not the global `Default()` one
+   (`_pool = DescriptorPool()` / `DESCRIPTOR = _pool.AddSerializedFile(...)`).
+   This avoids symbol collisions when co-installed with integrations that still
+   vendor their own stubs.
 
 ## Development
-
-Requires Python 3.12+.
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
