@@ -25,6 +25,11 @@ from .proto.bravia_control_pb2 import (
     StartNotifyStatesRequest,
 )
 from .proto.bravia_control_pb2_grpc import ControlDeviceServiceStub
+from .wire.application_list import (
+    build_application_list_request,
+    parse_application_list_response,
+    parse_tv_get_nonce_field1,
+)
 from .wire.capabilities import (
     CapabilityMeta,
     decode_capabilities_json_text,
@@ -37,6 +42,7 @@ from .wire.exec_command import (
     parse_exec_response,
     sign_exec_auth_token,
 )
+from .wire.get_nonce import build_get_nonce_request
 from .wire.get_states_auth import sign_get_states_request_body
 from .wire.get_states_request import (
     build_get_states_with_auth_request,
@@ -44,12 +50,15 @@ from .wire.get_states_request import (
 )
 from .wire.get_states_response import parse_get_states_response
 from .wire.notify import parse_notify_message
+from .wire.resources import build_get_resource_request, parse_get_resource_response
 
 _LOGGER = logging.getLogger(__name__)
 
 _SERVICE = "jp.co.sony.hes.ssh.controldevice.v1.ControlDeviceService"
 _EXEC_METHOD = f"/{_SERVICE}/ExecCommandWithAuth"
 _GET_STATES_METHOD = f"/{_SERVICE}/GetStatesWithAuth"
+_GET_RESOURCES_METHOD = f"/{_SERVICE}/GetResourcesWithAuth"
+_GET_NONCE_METHOD = f"/{_SERVICE}/GetNonce"
 _NOTIFY_METHOD = f"/{_SERVICE}/StartNotifyStates"
 
 _CHANNEL_OPTIONS = (
@@ -214,6 +223,63 @@ class BraviaConnectClient:
                     "no GetStates paths; call get_capabilities() first or pass paths"
                 )
             return self._get_states_unlocked(use_paths, timeout=timeout)
+
+    def _get_nonce(self, timeout: float) -> bytes:
+        """Fetch a fresh single-use nonce for a nonce-gated authenticated read."""
+        nonce_call = self._raw_unary(_GET_NONCE_METHOD)
+        return parse_tv_get_nonce_field1(
+            nonce_call(build_get_nonce_request(self._session_id), timeout=timeout)
+        )
+
+    def read_application_list(self, *, timeout: float = 8.0) -> list[dict]:
+        """Read the installed-app list (nonce-gated, AES-GCM encrypted).
+
+        GetNonce -> signed request with the nonce in the embedded field-2 slot
+        -> AES-256-GCM response decrypted with the session_key. Returns
+        ``[{"id": package, "label": name, "resources": [...]}, ...]``.
+        Requires ``session_key`` and the optional ``[crypto]`` extra.
+        """
+        if self._channel is None or self._session_random is None:
+            raise ConnectionError("not connected")
+        if not self._session_key:
+            raise ConnectionError("session_key required for application_list")
+        with self._session_lock:
+            nonce = self._get_nonce(timeout)
+            req = build_application_list_request(
+                session_random=self._session_random,
+                session_id=self._session_id,
+                hmac_key_hex=self._hmac_key,
+                nonce=nonce,
+            )
+            call = self._raw_unary(_GET_STATES_METHOD)
+            return parse_application_list_response(
+                call(req, timeout=timeout), self._session_key
+            )
+
+    def read_resource(self, uri: str, *, timeout: float = 8.0) -> bytes:
+        """Fetch and decrypt a resource (e.g. an app icon) by iot-resource URI.
+
+        Same nonce-gated flow as the app list, against GetResourcesWithAuth with
+        the full resource URI as the path. Requires ``session_key`` and
+        ``[crypto]``.
+        """
+        if self._channel is None or self._session_random is None:
+            raise ConnectionError("not connected")
+        if not self._session_key:
+            raise ConnectionError("session_key required for resources")
+        with self._session_lock:
+            nonce = self._get_nonce(timeout)
+            req = build_get_resource_request(
+                uri=uri,
+                session_random=self._session_random,
+                session_id=self._session_id,
+                hmac_key_hex=self._hmac_key,
+                nonce=nonce,
+            )
+            call = self._raw_unary(_GET_RESOURCES_METHOD)
+            return parse_get_resource_response(
+                call(req, timeout=timeout), self._session_key
+            )
 
     def close(self) -> None:
         """Stop notify and close the channel."""

@@ -15,14 +15,21 @@ Protocol code was extracted from those integrations (MIT). Thanks to
 
 ## Status
 
-`0.1.0a2` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
-`get_states`, and `ExecCommandWithAuth` (fresh `GetSessionRandom` per write).
-App-list/resources arrive in a later milestone.
+`0.1.0a3` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
+`get_states`, `ExecCommandWithAuth` (fresh `GetSessionRandom` per write), and
+nonce-gated TV `read_application_list` / `read_resource` (AES-GCM; needs
+`session_key` + `[crypto]`).
 
 ## Install
 
 ```bash
 pip install -e ".[dev]"
+```
+
+For TV app-list and icon reads (AES-GCM decrypt):
+
+```bash
+pip install "pybravia-connect[crypto]"
 ```
 
 ## Public API (sketch)

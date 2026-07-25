@@ -4,7 +4,7 @@ import pybravia_connect
 
 
 def test_version() -> None:
-    assert pybravia_connect.__version__ == "0.1.0a2"
+    assert pybravia_connect.__version__ == "0.1.0a3"
 
 
 def test_public_exports() -> None:

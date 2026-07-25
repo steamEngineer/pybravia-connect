@@ -1,6 +1,6 @@
 [project]
 name = "pybravia-connect"
-version = "0.1.0a2"
+version = "0.1.0a3"
 description = "HA-agnostic Sony BRAVIA Connect ControlDeviceService client"
 readme = "README.md"
 license = { text = "MIT" }
@@ -17,6 +17,7 @@ crypto = ["cryptography>=42"]
 dev = [
     "pytest>=8.0",
     "ruff>=0.9",
+    "cryptography>=42",
 ]
 
 [build-system]
