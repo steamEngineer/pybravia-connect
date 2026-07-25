@@ -3,16 +3,26 @@
 from .client import BraviaConnectClient
 from .credentials import (
     async_complete_oauth_flow,
+    async_credentials_from_oauth,
+    async_exchange_oauth_redirect,
+    async_get_device_states,
+    async_get_devices,
+    async_list_oauth_devices,
+    async_refresh_access_token,
     async_refresh_credentials,
     build_authorization_url,
     build_credentials_bundle,
     credentials_to_json,
     device_hardware_info,
     generate_pkce_pair,
+    get_device_states,
+    get_devices,
+    get_session_keys,
     keys_need_refresh,
     parse_authorization_code,
     parse_credentials_json,
     parse_oauth_redirect_state,
+    refresh_credentials,
     select_device,
     select_speaker_device,
     select_tv_device,
@@ -20,6 +30,7 @@ from .credentials import (
 )
 from .discovery import (
     DEFAULT_THEATRE_PORT,
+    ZEROCONF_TYPE,
     discover_grpc_port,
     is_control_device_service,
     scan_open_ports,
@@ -33,12 +44,21 @@ from .exceptions import (
     DeviceSelectError,
     OAuthError,
 )
-from .wire.capabilities import CapabilityMeta
+from .wire.capabilities import (
+    CapabilityMeta,
+    enum_values_from_capability,
+    int_range_from_capability,
+    is_int_capability,
+)
+from .wire.notify import APPLICATION_LIST_PATH
+from .wire.resources import image_content_type
 
-__version__ = "0.1.0a4"
+__version__ = "0.1.0a5"
 
 __all__ = [
+    "APPLICATION_LIST_PATH",
     "DEFAULT_THEATRE_PORT",
+    "ZEROCONF_TYPE",
     "AuthError",
     "BraviaConnectClient",
     "BraviaConnectError",
@@ -50,18 +70,32 @@ __all__ = [
     "OAuthError",
     "__version__",
     "async_complete_oauth_flow",
+    "async_credentials_from_oauth",
+    "async_exchange_oauth_redirect",
+    "async_get_device_states",
+    "async_get_devices",
+    "async_list_oauth_devices",
+    "async_refresh_access_token",
     "async_refresh_credentials",
     "build_authorization_url",
     "build_credentials_bundle",
     "credentials_to_json",
     "device_hardware_info",
     "discover_grpc_port",
+    "enum_values_from_capability",
     "generate_pkce_pair",
+    "get_device_states",
+    "get_devices",
+    "get_session_keys",
+    "image_content_type",
+    "int_range_from_capability",
     "is_control_device_service",
+    "is_int_capability",
     "keys_need_refresh",
     "parse_authorization_code",
     "parse_credentials_json",
     "parse_oauth_redirect_state",
+    "refresh_credentials",
     "scan_open_ports",
     "select_device",
     "select_speaker_device",

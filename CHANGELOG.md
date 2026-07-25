@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a5] - 2026-07-25
+
+### Added
+
+- Public re-exports on the package root for HA consumers: OAuth/Seeds helpers
+  (`async_credentials_from_oauth`, `async_exchange_oauth_redirect`,
+  `async_list_oauth_devices`, `async_get_device_states`, `async_get_devices`,
+  `async_refresh_access_token`, plus sync `refresh_credentials` /
+  `get_devices` / `get_device_states` / `get_session_keys`), capability helpers
+  (`is_int_capability`, `int_range_from_capability`,
+  `enum_values_from_capability`), TV constants (`APPLICATION_LIST_PATH`,
+  `image_content_type`), and `ZEROCONF_TYPE`.
+
 ## [0.1.0a4] - 2026-07-25
 
 ### Changed
@@ -48,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public alpha: OAuth credentials helpers, connect/handshake,
   `StartNotifyStates`, `GetCapabilities`, and `ExecCommandWithAuth`.
 
-[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a4...HEAD
+[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a5...HEAD
+[0.1.0a5]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a4...v0.1.0a5
 [0.1.0a4]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a3...v0.1.0a4
 [0.1.0a3]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a2...v0.1.0a3
 [0.1.0a2]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a1...v0.1.0a2
