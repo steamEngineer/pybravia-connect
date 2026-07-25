@@ -76,9 +76,8 @@ def decode_field(data: bytes, pos: int) -> tuple[tuple[int, int, Any] | None, in
         length, pos = read_varint(data, pos)
         if pos + length > len(data):
             return None, pos
-        value = data[pos : pos + length]
-        pos += length
-        return (field_num, wire_type, value), pos
+        end = pos + length
+        return (field_num, wire_type, data[pos:end]), end
     return None, pos
 
 

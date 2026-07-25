@@ -110,7 +110,8 @@ def capability_index_from_json(
         name = entry.get("name")
         if not isinstance(name, str) or not name:
             continue
-        props = entry.get("props") if isinstance(entry.get("props"), dict) else {}
+        raw_props = entry.get("props")
+        props: dict[str, Any] = raw_props if isinstance(raw_props, dict) else {}
         cap_type = entry.get("type")
         index[name] = CapabilityMeta(
             name=name,
@@ -258,7 +259,8 @@ def paths_for_safe_get_states(cap_json: dict[str, Any] | str | None) -> list[str
         name = entry.get("name")
         if not isinstance(name, str) or not name:
             continue
-        props = entry.get("props") if isinstance(entry.get("props"), dict) else {}
+        raw_props = entry.get("props")
+        props: dict[str, Any] = raw_props if isinstance(raw_props, dict) else {}
         if props.get("get") is not True:
             continue
         if _command_independence_blocks_getstates(props):

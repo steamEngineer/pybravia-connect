@@ -18,7 +18,7 @@ import uuid
 import grpc
 
 from .exceptions import AuthError, ConnectionError
-from .proto.bravia_control_pb2 import (
+from .proto.bravia_control_pb2 import (  # type: ignore[attr-defined]
     ConfirmKeysRequest,
     ConfirmSigninRequest,
     GetSessionRandomRequest,

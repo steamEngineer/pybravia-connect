@@ -20,6 +20,8 @@ Protocol code was extracted from those integrations (MIT). Thanks to
 nonce-gated TV `read_application_list` / `read_resource` (AES-GCM; needs
 `session_key` + `[crypto]`).
 
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 ## Install
 
 ```bash
@@ -30,6 +32,7 @@ For local development:
 
 ```bash
 pip install -e ".[dev]"
+pre-commit install  # optional local hooks; CI is the source of truth
 ```
 
 For TV app-list and icon reads (AES-GCM decrypt):
@@ -92,5 +95,23 @@ Then re-apply two manual patches:
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ruff check . && ruff format --check .
+mypy
 pytest -q
+python -m build && twine check dist/*
 ```
+
+## Releasing
+
+1. Bump `__version__` in `src/pybravia_connect/__init__.py` (single source of truth).
+2. Move `[Unreleased]` notes into a new `CHANGELOG.md` section for that version.
+3. Commit, push to `main`, then tag and push:
+   ```bash
+   git tag vX.Y.ZaN
+   git push origin vX.Y.ZaN
+   ```
+4. The Publish workflow builds, checks that the tag matches the wheel version,
+   uploads to PyPI via Trusted Publishing, and creates a GitHub Release from the
+   changelog section.
+5. Bump the pin in consumer integrations (for example
+   `bravia-quad-homeassistant` `custom_components/bravia_quad/manifest.json` and
+   lockfile) in a separate change.
