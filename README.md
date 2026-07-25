@@ -15,19 +15,20 @@ Protocol code was extracted from those integrations (MIT). Thanks to
 
 ## Status
 
-`0.1.0a6` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
+`0.1.0a7` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
 `get_capabilities_json`, `session_snapshot`, `get_states`,
 `ExecCommandWithAuth` (fresh `GetSessionRandom` per write), and nonce-gated TV
 `read_application_list` / `read_resource` (AES-GCM; needs `session_key` +
-`[crypto]`). Public root also re-exports OAuth/Seeds helpers, capability
-helpers, and TV constants used by HA consumers.
+`[crypto]`). Public root also re-exports OAuth/Seeds helpers (including sync
+`refresh_access_token`), capability helpers, and TV constants used by HA
+consumers.
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Install
 
 ```bash
-pip install pybravia-connect==0.1.0a6
+pip install pybravia-connect==0.1.0a7
 ```
 
 For local development:
@@ -66,6 +67,7 @@ from pybravia_connect import (
     image_content_type,
     int_range_from_capability,
     is_int_capability,
+    refresh_access_token,
     refresh_credentials,
     select_device,
     start_oauth_login,

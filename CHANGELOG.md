@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a7] - 2026-07-25
+
+### Added
+
+- Public re-export of sync `refresh_access_token` on the package root (Seeds
+  token refresh for scripts and sync HA paths).
+
 ## [0.1.0a6] - 2026-07-25
 
 ### Added
@@ -71,7 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public alpha: OAuth credentials helpers, connect/handshake,
   `StartNotifyStates`, `GetCapabilities`, and `ExecCommandWithAuth`.
 
-[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a6...HEAD
+[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a7...HEAD
+[0.1.0a7]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a6...v0.1.0a7
 [0.1.0a6]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a5...v0.1.0a6
 [0.1.0a5]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a4...v0.1.0a5
 [0.1.0a4]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a3...v0.1.0a4
