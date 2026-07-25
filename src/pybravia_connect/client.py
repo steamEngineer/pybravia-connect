@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable
 import hashlib
 import hmac
+import json
 import logging
 import threading
 from typing import Any
@@ -102,6 +103,7 @@ class BraviaConnectClient:
         self._session_random: bytes | None = None
         self._auth_token: bytes | None = None
         self._capabilities: dict[str, CapabilityMeta] = {}
+        self._capabilities_json: dict[str, Any] | None = None
         self._safe_get_states_paths: list[str] = []
         self._session_lock = threading.Lock()
         self._notify_cache: dict[str, Any] = {}
@@ -307,11 +309,36 @@ class BraviaConnectClient:
         raw = call(b"", timeout=timeout)
         index = parse_capability_index(raw) or {}
         self._capabilities = index
-        cap_json = decode_capabilities_json_text(raw)
-        self._safe_get_states_paths = (
-            paths_for_safe_get_states(cap_json) if cap_json else []
-        )
+        cap_text = decode_capabilities_json_text(raw)
+        parsed: dict[str, Any] | None = None
+        if cap_text:
+            try:
+                loaded = json.loads(cap_text)
+            except json.JSONDecodeError:
+                loaded = None
+            if isinstance(loaded, dict):
+                parsed = loaded
+        self._capabilities_json = parsed
+        self._safe_get_states_paths = paths_for_safe_get_states(parsed)
         return index
+
+    def get_capabilities_json(self, timeout: float = 10.0) -> dict[str, Any] | None:
+        """Return parsed GetCapabilities JSON, fetching once if uncached."""
+        if self._capabilities_json is None:
+            if self._channel is None:
+                raise ConnectionError("not connected")
+            self.get_capabilities(timeout=timeout)
+        return self._capabilities_json
+
+    def session_snapshot(self) -> dict[str, Any]:
+        """Return connection and handshake flags already held by the client."""
+        return {
+            "connected": self._channel is not None,
+            "session_id": self._session_id,
+            "has_session_random": self._session_random is not None,
+            "has_auth_token": self._auth_token is not None,
+            "has_capabilities": bool(self._capabilities),
+        }
 
     @property
     def capabilities(self) -> dict[str, CapabilityMeta]:

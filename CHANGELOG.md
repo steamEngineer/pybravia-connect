@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a6] - 2026-07-25
+
+### Added
+
+- `BraviaConnectClient.get_capabilities_json()` — parsed GetCapabilities JSON
+  for scrapes and debug without calling private unary helpers.
+- `BraviaConnectClient.session_snapshot()` — connected flag plus existing
+  handshake identity/flags (`session_id`, session random / auth token /
+  capabilities presence).
+
 ## [0.1.0a5] - 2026-07-25
 
 ### Added
@@ -61,7 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public alpha: OAuth credentials helpers, connect/handshake,
   `StartNotifyStates`, `GetCapabilities`, and `ExecCommandWithAuth`.
 
-[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a5...HEAD
+[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a6...HEAD
+[0.1.0a6]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a5...v0.1.0a6
 [0.1.0a5]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a4...v0.1.0a5
 [0.1.0a4]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a3...v0.1.0a4
 [0.1.0a3]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a2...v0.1.0a3
