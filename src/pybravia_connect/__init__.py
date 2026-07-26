@@ -60,7 +60,7 @@ from .wire.capabilities import (
 from .wire.notify import APPLICATION_LIST_PATH
 from .wire.resources import image_content_type
 
-__version__ = "0.1.0a9"
+__version__ = "0.1.0a10"
 
 __all__ = [
     "APPLICATION_LIST_PATH",
