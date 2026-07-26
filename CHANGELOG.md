@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Repository security docs: `THREAT_MODEL.md`, expanded `SECURITY.md`, README
+  Security section; ignore credential/HAR artifacts; lean `pip-audit` CI workflow.
+
 ## [0.1.0a8] - 2026-07-25
 
 ### Added

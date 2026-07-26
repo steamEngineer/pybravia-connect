@@ -129,6 +129,15 @@ Then re-apply two manual patches:
    This avoids symbol collisions when co-installed with integrations that still
    vendor their own stubs.
 
+## Security
+
+Local gRPC control assumes a **trusted private LAN**. Do not expose the device’s
+gRPC port to the internet. Never commit session-key JSON, OAuth tokens, or HAR
+files from the CLI tools.
+
+See [SECURITY.md](SECURITY.md) for reporting and operator guidance, and
+[THREAT_MODEL.md](THREAT_MODEL.md) for what is in scope for private advisories.
+
 ## Development
 
 ```bash
