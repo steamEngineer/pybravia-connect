@@ -13,3 +13,8 @@ htmlcov/
 .mypy_cache/
 .tox/
 *.egg
+
+# Credential / capture artifacts (never commit)
+session_keys.json
+credentials*.json
+*.har
