@@ -149,6 +149,11 @@ pytest -q
 python -m build && twine check dist/*
 ```
 
+Open PRs against `main` and complete
+[`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md)
+(tick exactly one change type so CI can label the PR for release notes).
+See [AGENTS.md](AGENTS.md) for agent/contributor conventions.
+
 ## Releasing
 
 1. Bump `__version__` in `src/pybravia_connect/__init__.py` (single source of truth).
