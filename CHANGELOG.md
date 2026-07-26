@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a9] - 2026-07-26
+
 ### Added
 
 - Repository security docs: `THREAT_MODEL.md`, expanded `SECURITY.md`, README
   Security section; ignore credential/HAR artifacts; lean `pip-audit` CI workflow.
+- `AGENTS.md` / `CLAUDE.md` and checkbox-driven PR labeling for release notes.
+- Consumer-first README (badges, quickstart, Features/Requirements); maintainer
+  notes in `docs/development.md` and `docs/releasing.md`.
 
 ## [0.1.0a8] - 2026-07-25
 
@@ -92,7 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public alpha: OAuth credentials helpers, connect/handshake,
   `StartNotifyStates`, `GetCapabilities`, and `ExecCommandWithAuth`.
 
-[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a8...HEAD
+[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a9...HEAD
+[0.1.0a9]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a8...v0.1.0a9
 [0.1.0a8]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a7...v0.1.0a8
 [0.1.0a7]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a6...v0.1.0a7
 [0.1.0a6]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a5...v0.1.0a6
