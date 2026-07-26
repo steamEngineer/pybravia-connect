@@ -61,3 +61,5 @@ version-resolver:
       - "docs"
       - "dependencies"
   default: patch
+exclude-labels:
+  - "skip-changelog"
