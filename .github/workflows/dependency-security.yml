@@ -19,10 +19,20 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install package (runtime + optional crypto) and pip-audit
+      - name: Install runtime deps, optional crypto, and pip-audit
+        # Install declared deps without the local package: new alphas are not
+        # on PyPI until after the release tag publish, and --strict fails then.
         run: |
-          pip install -e ".[crypto]"
-          pip install pip-audit
+          python <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          data = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+          deps = list(data["project"]["dependencies"])
+          deps.extend(data["project"]["optional-dependencies"]["crypto"])
+          Path("/tmp/deps.txt").write_text("\n".join(deps) + "\n", encoding="utf-8")
+          PY
+          pip install -r /tmp/deps.txt pip-audit
 
       - name: Audit installed dependencies
         run: pip-audit --desc --strict
