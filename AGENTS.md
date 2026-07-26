@@ -17,7 +17,7 @@
 - `ruff check . && ruff format --check .` — lint/format
 - `mypy` — type check
 - `pytest -q` — unit tests
-- `python tools/live_smoke.py` — live device smoke (needs `BRAVIA_*` env; see README)
+- `python tools/live_smoke.py` — live device smoke (needs `BRAVIA_*` env; see README Development and the script docstring)
 - `python -m build && twine check dist/*` — packaging check when metadata/build changes
 
 Run ruff, mypy, and pytest after code changes.
