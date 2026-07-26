@@ -1,5 +1,10 @@
 # pybravia-connect
 
+[![PyPI](https://img.shields.io/pypi/v/pybravia-connect.svg)](https://pypi.org/project/pybravia-connect/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pybravia-connect.svg)](https://pypi.org/project/pybravia-connect/)
+[![CI](https://github.com/steamEngineer/pybravia-connect/actions/workflows/ci.yml/badge.svg)](https://github.com/steamEngineer/pybravia-connect/actions/workflows/ci.yml)
+[![License](https://img.shields.io/pypi/l/pybravia-connect.svg)](LICENSE)
+
 HA-agnostic Python client for Sony BRAVIA Connect local gRPC
 (`ControlDeviceService`).
 
@@ -15,27 +20,16 @@ Protocol code was extracted from those integrations (MIT). Thanks to
 
 ## Status
 
-`0.1.0a8` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
-`get_capabilities_json`, `session_snapshot`, `get_states`,
-`ExecCommandWithAuth` (fresh `GetSessionRandom` per write), and nonce-gated TV
-`read_application_list` / `read_resource` (AES-GCM; needs `session_key` +
-`[crypto]`). Public root also re-exports OAuth/Seeds helpers (including sync
-`complete_oauth_flow` / `load_credentials` / `write_credentials`), capability
-helpers, and TV constants used by HA consumers.
-
-See [CHANGELOG.md](CHANGELOG.md) for release history.
+**Alpha** (`0.1.x` on PyPI). APIs may change before 1.0. See
+[CHANGELOG.md](CHANGELOG.md) for release history. Apps that need a fixed
+surface can pin a specific version in their own lockfile.
 
 ## Install
 
-```bash
-pip install pybravia-connect==0.1.0a8
-```
-
-For local development:
+Requires Python 3.12+.
 
 ```bash
-pip install -e ".[dev]"
-pre-commit install  # optional local hooks; CI is the source of truth
+pip install pybravia-connect
 ```
 
 For TV app-list and icon reads (AES-GCM decrypt):
@@ -44,90 +38,90 @@ For TV app-list and icon reads (AES-GCM decrypt):
 pip install "pybravia-connect[crypto]"
 ```
 
-## Public API (sketch)
+For local development:
+
+```bash
+pip install -e ".[dev]"
+```
+
+## Quickstart
+
+Obtain credentials JSON first (see [Credentials CLI](#credentials-cli)), then:
 
 ```python
 from pybravia_connect import (
-    APPLICATION_LIST_PATH,
     BraviaConnectClient,
     DEFAULT_THEATRE_PORT,
-    ZEROCONF_TYPE,
-    async_complete_oauth_flow,
-    async_credentials_from_oauth,
-    async_exchange_oauth_redirect,
-    async_get_device_states,
-    async_get_devices,
-    async_list_oauth_devices,
-    async_refresh_access_token,
-    complete_oauth_flow,
-    discover_grpc_port,
-    enum_values_from_capability,
-    get_device_states,
-    get_devices,
-    get_session_keys,
-    image_content_type,
-    int_range_from_capability,
-    is_int_capability,
     load_credentials,
-    refresh_access_token,
-    refresh_credentials,
-    select_device,
-    start_oauth_login,
-    write_credentials,
 )
 
-client.get_capabilities_json()  # parsed GetCapabilities JSON (or None)
-client.session_snapshot()  # connected + handshake flags for debug
+HOST = "192.168.x.x"
+CREDS_PATH = "/path/to/session_keys.json"  # never commit
+
+creds = load_credentials(CREDS_PATH)
+client = BraviaConnectClient(
+    HOST,
+    DEFAULT_THEATRE_PORT,  # or discover_grpc_port(HOST) for TVs
+    creds["device_id"],
+    creds["hmac_key"],
+    key_id=creds.get("key_id"),
+    session_key=creds.get("session_key"),
+)
+client.connect()
+print(client.get_capabilities_json())
+client.start_notify(lambda path, value: print(path, value))
+# optional: client.get_states(["power", "volume"])
+# optional write: client.exec_command("volume", 10)  # power on first
+client.close()
 ```
 
-Sync gRPC client (run in an executor from asyncio). Async credentials use
-`aiohttp.ClientSession`. Sync Seeds helpers (`complete_oauth_flow`,
-`refresh_credentials`, `get_devices`, …) are for scripts; prefer the
-`async_*` variants from HA.
+`BraviaConnectClient` is synchronous — run it in an executor from asyncio.
+The example is read-mostly; volume/mute writes no-op while the control unit is
+off. Public exports are listed in `pybravia_connect.__all__`.
 
-## CLI session keys
+## Features
 
-OAuth login and write a credentials JSON for local gRPC (never commit the
-output):
+- Connect and auth handshake for local `ControlDeviceService` gRPC
+- `GetCapabilities` / `get_capabilities_json` and capability helpers
+- `StartNotifyStates` delta stream and `get_states`
+- `ExecCommandWithAuth` (fresh session random per write)
+- OAuth / Seeds credential helpers (sync for scripts; `async_*` for HA)
+- TCP port discovery for non-Theatre devices (`discover_grpc_port`)
+- Optional TV AES-GCM app-list / icon reads (`session_key` + `[crypto]`)
+
+Validated on HT-A9M2 for connect/handshake, capabilities, notify, `get_states`,
+and volume writes while powered on.
+
+## Requirements
+
+- Device on a **trusted private LAN** (do not expose the gRPC port)
+- Credentials JSON with at least `device_id` and `hmac_key` (optional
+  `key_id`, `session_key`)
+- Theatre systems default to port `55051` (`DEFAULT_THEATRE_PORT`); TVs often
+  need `discover_grpc_port`
+- Stop any Home Assistant `bravia_quad` gRPC session on the same device before
+  experimenting — dual `key_id` sessions flake
+
+## Credentials CLI
+
+OAuth login and write credentials for local gRPC (never commit the output):
 
 ```bash
 python tools/get_session_keys.py --login --open -o /tmp/session_keys.json
 ```
 
-Also supports `--code`, `--token`, `--refresh -i …`, and `--from-har` (Chrome
-HAR + `--code-verifier`).
+See `python tools/get_session_keys.py --help` for `--code`, `--token`,
+`--refresh`, and `--from-har`.
 
-## Live smoke
+## Documentation
 
-```bash
-export BRAVIA_HOST=192.168.x.x
-export BRAVIA_PORT=55051          # Theatre default; TVs may need discovery
-export BRAVIA_CREDENTIALS=/path/to/keys.json
-python tools/live_smoke.py
-```
-
-Validated on HT-A9M2: connect/handshake, GetCapabilities, StartNotifyStates,
-`get_states`, and volume writes via `exec_command` while powered on. Volume/mute
-writes are no-ops when the control unit is off — live smoke wakes `power` first.
-Stop any Home Assistant `bravia_quad` session on the same device before smoke
-(dual `key_id` sessions flake).
-
-## Regenerating protobuf stubs
-
-```bash
-python -m grpc_tools.protoc -Isrc/pybravia_connect/proto \
-  --python_out=src/pybravia_connect/proto \
-  --grpc_python_out=src/pybravia_connect/proto \
-  src/pybravia_connect/proto/bravia_control.proto
-```
-
-Then re-apply two manual patches:
-
-1. Make the `pb2_grpc` import relative: `from . import bravia_control_pb2`.
-2. Register the descriptor in a **private** pool, not the global `Default()` one
-   (`_pool = DescriptorPool()` / `DESCRIPTOR = _pool.AddSerializedFile(...)`).
-   This avoids symbol collisions when co-installed with integrations that still
-   vendor their own stubs.
+- [CHANGELOG.md](CHANGELOG.md) — release history
+- [SECURITY.md](SECURITY.md) — reporting and operator guidance
+- [THREAT_MODEL.md](THREAT_MODEL.md) — advisory scope
+- [Issues](https://github.com/steamEngineer/pybravia-connect/issues)
+- [AGENTS.md](AGENTS.md) — contributor / agent conventions
+- [docs/development.md](docs/development.md) — protobuf stub regeneration
+- [docs/releasing.md](docs/releasing.md) — tagging and PyPI publish
 
 ## Security
 
@@ -146,7 +140,14 @@ pip install -e ".[dev]"
 ruff check . && ruff format --check .
 mypy
 pytest -q
-python -m build && twine check dist/*
+```
+
+Live device smoke (env details in the script docstring):
+
+```bash
+export BRAVIA_HOST=192.168.x.x
+export BRAVIA_CREDENTIALS=/path/to/keys.json
+python tools/live_smoke.py
 ```
 
 Open PRs against `main` and complete
@@ -154,18 +155,11 @@ Open PRs against `main` and complete
 (tick exactly one change type so CI can label the PR for release notes).
 See [AGENTS.md](AGENTS.md) for agent/contributor conventions.
 
-## Releasing
+Protobuf regeneration and release steps:
+[docs/development.md](docs/development.md),
+[docs/releasing.md](docs/releasing.md).
 
-1. Bump `__version__` in `src/pybravia_connect/__init__.py` (single source of truth).
-2. Move `[Unreleased]` notes into a new `CHANGELOG.md` section for that version.
-3. Commit, push to `main`, then tag and push:
-   ```bash
-   git tag vX.Y.ZaN
-   git push origin vX.Y.ZaN
-   ```
-4. The Publish workflow builds, checks that the tag matches the wheel version,
-   uploads to PyPI via Trusted Publishing, and creates a GitHub Release from the
-   changelog section.
-5. Bump the pin in consumer integrations (for example
-   `bravia-quad-homeassistant` `custom_components/bravia_quad/manifest.json` and
-   lockfile) in a separate change.
+## License
+
+MIT. Protocol code was extracted from the integrations listed above; thanks to
+@steamEngineer and @braviafanboy.
