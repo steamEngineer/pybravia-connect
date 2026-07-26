@@ -1,14 +1,13 @@
-# bravia-connect
+# bravaconnect
 
 This is a **PyPI name alias** for
 [`pybravia-connect`](https://pypi.org/project/pybravia-connect/).
 
-Install the canonical name or a reserved alias; all resolve to the same library.
-The import package is always `pybravia_connect`:
+Install either name; both resolve to the same library. The import package is
+always `pybravia_connect`:
 
 ```bash
 pip install pybravia-connect
-# or: pip install bravia-connect
 # or: pip install bravaconnect
 ```
 

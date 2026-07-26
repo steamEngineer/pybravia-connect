@@ -10,20 +10,22 @@
    git push origin vX.Y.ZaN
    ```
 4. The Publish workflow builds, checks that the tag matches the wheel version,
-   builds the `bravia-connect` PyPI alias (dependency-only pin of this version),
-   uploads both to PyPI via Trusted Publishing, and creates a GitHub Release from
-   the changelog section.
+   builds the PyPI aliases (dependency-only pins of this version), uploads the
+   canonical package and aliases to PyPI via Trusted Publishing, and creates a
+   GitHub Release from the changelog section.
 5. Bump the pin in consumer integrations (for example
    `bravia-quad-homeassistant` `custom_components/bravia_quad/manifest.json` and
    lockfile) in a separate change.
 
-## PyPI alias (`bravia-connect`)
+## PyPI aliases (`bravia-connect`, `bravaconnect`)
 
-The Publish workflow also uploads a version-locked alias named `bravia-connect`
-(`pip install bravia-connect` → depends on `pybravia-connect==<same version>`).
-Import remains `pybravia_connect`. No separate version bump or tag is required.
+The Publish workflow also uploads version-locked aliases named `bravia-connect`
+and `bravaconnect` (`pip install <alias>` → depends on
+`pybravia-connect==<same version>`). Import remains `pybravia_connect`. No
+separate version bump or tag is required.
 
-One-time setup (already done for `pybravia-connect`): add a **pending** Trusted
-Publisher on PyPI for project `bravia-connect`, same owner/repo
-(`steamEngineer` / `pybravia-connect`), workflow `publish.yml`, environment
-`pypi`. The first tagged release after that creates the project.
+One-time setup per alias project: add a **pending** Trusted Publisher on PyPI
+for that project name, same owner/repo (`steamEngineer` / `pybravia-connect`),
+workflow `publish.yml`, environment `pypi`. The first tagged release after that
+creates the project. `bravia-connect` is already claimed; add `bravaconnect`
+before the release that first publishes it.
