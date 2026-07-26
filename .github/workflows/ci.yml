@@ -55,10 +55,13 @@ jobs:
           python-version: "3.13"
 
       - name: Install build tools
-        run: pip install build twine
+        run: pip install build twine hatchling
 
       - name: Build sdist and wheel
         run: python -m build
+
+      - name: Build bravia-connect PyPI alias
+        run: python tools/build_pypi_alias.py
 
       - name: Twine check
         run: twine check dist/*

@@ -39,6 +39,9 @@ jobs:
       - name: Build package
         run: python -m build
 
+      - name: Build bravia-connect PyPI alias
+        run: python tools/build_pypi_alias.py
+
       - name: Twine check
         run: twine check dist/*
 
@@ -49,7 +52,7 @@ jobs:
           import email
           from pathlib import Path
           from zipfile import ZipFile
-          wheel = next(Path("dist").glob("*.whl"))
+          wheel = next(Path("dist").glob("pybravia_connect-*.whl"))
           with ZipFile(wheel) as zf:
               meta_name = next(n for n in zf.namelist() if n.endswith(".dist-info/METADATA"))
               msg = email.message_from_bytes(zf.read(meta_name))
