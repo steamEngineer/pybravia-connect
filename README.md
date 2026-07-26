@@ -15,20 +15,20 @@ Protocol code was extracted from those integrations (MIT). Thanks to
 
 ## Status
 
-`0.1.0a7` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
+`0.1.0a8` — connect/handshake, `StartNotifyStates`, `GetCapabilities`,
 `get_capabilities_json`, `session_snapshot`, `get_states`,
 `ExecCommandWithAuth` (fresh `GetSessionRandom` per write), and nonce-gated TV
 `read_application_list` / `read_resource` (AES-GCM; needs `session_key` +
 `[crypto]`). Public root also re-exports OAuth/Seeds helpers (including sync
-`refresh_access_token`), capability helpers, and TV constants used by HA
-consumers.
+`complete_oauth_flow` / `load_credentials` / `write_credentials`), capability
+helpers, and TV constants used by HA consumers.
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Install
 
 ```bash
-pip install pybravia-connect==0.1.0a7
+pip install pybravia-connect==0.1.0a8
 ```
 
 For local development:
@@ -59,6 +59,7 @@ from pybravia_connect import (
     async_get_devices,
     async_list_oauth_devices,
     async_refresh_access_token,
+    complete_oauth_flow,
     discover_grpc_port,
     enum_values_from_capability,
     get_device_states,
@@ -67,10 +68,12 @@ from pybravia_connect import (
     image_content_type,
     int_range_from_capability,
     is_int_capability,
+    load_credentials,
     refresh_access_token,
     refresh_credentials,
     select_device,
     start_oauth_login,
+    write_credentials,
 )
 
 client.get_capabilities_json()  # parsed GetCapabilities JSON (or None)
@@ -78,8 +81,21 @@ client.session_snapshot()  # connected + handshake flags for debug
 ```
 
 Sync gRPC client (run in an executor from asyncio). Async credentials use
-`aiohttp.ClientSession`. Sync Seeds helpers (`refresh_credentials`,
-`get_devices`, …) are for scripts; prefer the `async_*` variants from HA.
+`aiohttp.ClientSession`. Sync Seeds helpers (`complete_oauth_flow`,
+`refresh_credentials`, `get_devices`, …) are for scripts; prefer the
+`async_*` variants from HA.
+
+## CLI session keys
+
+OAuth login and write a credentials JSON for local gRPC (never commit the
+output):
+
+```bash
+python tools/get_session_keys.py --login --open -o /tmp/session_keys.json
+```
+
+Also supports `--code`, `--token`, `--refresh -i …`, and `--from-har` (Chrome
+HAR + `--code-verifier`).
 
 ## Live smoke
 

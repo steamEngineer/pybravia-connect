@@ -12,13 +12,18 @@ from .credentials import (
     async_refresh_credentials,
     build_authorization_url,
     build_credentials_bundle,
+    complete_oauth_flow,
+    credentials_from_oauth,
     credentials_to_json,
     device_hardware_info,
+    exchange_authorization_code,
+    exchange_oauth_redirect,
     generate_pkce_pair,
     get_device_states,
     get_devices,
     get_session_keys,
     keys_need_refresh,
+    load_credentials,
     parse_authorization_code,
     parse_credentials_json,
     parse_oauth_redirect_state,
@@ -28,6 +33,7 @@ from .credentials import (
     select_speaker_device,
     select_tv_device,
     start_oauth_login,
+    write_credentials,
 )
 from .discovery import (
     DEFAULT_THEATRE_PORT,
@@ -54,7 +60,7 @@ from .wire.capabilities import (
 from .wire.notify import APPLICATION_LIST_PATH
 from .wire.resources import image_content_type
 
-__version__ = "0.1.0a7"
+__version__ = "0.1.0a8"
 
 __all__ = [
     "APPLICATION_LIST_PATH",
@@ -80,10 +86,14 @@ __all__ = [
     "async_refresh_credentials",
     "build_authorization_url",
     "build_credentials_bundle",
+    "complete_oauth_flow",
+    "credentials_from_oauth",
     "credentials_to_json",
     "device_hardware_info",
     "discover_grpc_port",
     "enum_values_from_capability",
+    "exchange_authorization_code",
+    "exchange_oauth_redirect",
     "generate_pkce_pair",
     "get_device_states",
     "get_devices",
@@ -93,6 +103,7 @@ __all__ = [
     "is_control_device_service",
     "is_int_capability",
     "keys_need_refresh",
+    "load_credentials",
     "parse_authorization_code",
     "parse_credentials_json",
     "parse_oauth_redirect_state",
@@ -103,4 +114,5 @@ __all__ = [
     "select_speaker_device",
     "select_tv_device",
     "start_oauth_login",
+    "write_credentials",
 ]

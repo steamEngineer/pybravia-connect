@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a8] - 2026-07-25
+
+### Added
+
+- Sync OAuth helpers mirroring the async chain: `exchange_authorization_code`,
+  `exchange_oauth_redirect`, `credentials_from_oauth`, `complete_oauth_flow`.
+- `load_credentials` / `write_credentials` for credentials JSON files.
+- `tools/get_session_keys.py` — Sony Seeds OAuth → gRPC session keys CLI.
+
 ## [0.1.0a7] - 2026-07-25
 
 ### Added
@@ -78,7 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public alpha: OAuth credentials helpers, connect/handshake,
   `StartNotifyStates`, `GetCapabilities`, and `ExecCommandWithAuth`.
 
-[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a7...HEAD
+[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a8...HEAD
+[0.1.0a8]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a7...v0.1.0a8
 [0.1.0a7]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a6...v0.1.0a7
 [0.1.0a6]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a5...v0.1.0a6
 [0.1.0a5]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a4...v0.1.0a5

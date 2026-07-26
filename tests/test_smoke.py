@@ -11,21 +11,27 @@ _EXPECTED_EXPORTS = (
     "async_get_devices",
     "async_list_oauth_devices",
     "async_refresh_access_token",
+    "complete_oauth_flow",
+    "credentials_from_oauth",
     "enum_values_from_capability",
+    "exchange_authorization_code",
+    "exchange_oauth_redirect",
     "get_device_states",
     "get_devices",
     "get_session_keys",
     "image_content_type",
     "int_range_from_capability",
     "is_int_capability",
+    "load_credentials",
     "refresh_access_token",
     "refresh_credentials",
+    "write_credentials",
 )
 
 
 def test_version() -> None:
     assert isinstance(pybravia_connect.__version__, str)
-    assert pybravia_connect.__version__ == "0.1.0a7"
+    assert pybravia_connect.__version__ == "0.1.0a8"
 
 
 def test_public_exports() -> None:

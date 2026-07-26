@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+from pathlib import Path
 import secrets
 import time
 from typing import Any
@@ -383,6 +384,101 @@ def refresh_credentials(
     session_keys = get_session_keys(resolved_device_id, access_token)
     session_keys.setdefault("device_id", resolved_device_id)
     return build_credentials_bundle(session_keys, token_response, previous=credentials)
+
+
+def load_credentials(path: str | Path) -> dict[str, Any]:
+    """Load a credentials JSON file (session keys + optional OAuth tokens)."""
+    with Path(path).open(encoding="utf-8") as fh:
+        data = json.load(fh)
+    if not isinstance(data, dict):
+        msg = "credentials JSON must be an object"
+        raise TypeError(msg)
+    return data
+
+
+def write_credentials(path: str | Path, credentials: dict[str, Any]) -> None:
+    """Write credentials JSON (indent-2, trailing newline)."""
+    with Path(path).open("w", encoding="utf-8") as fh:
+        json.dump(credentials, fh, indent=2)
+        fh.write("\n")
+
+
+def exchange_authorization_code(
+    authorization_code: str, code_verifier: str
+) -> dict[str, Any]:
+    """Exchange an authorization code for OAuth tokens (sync)."""
+    return _sync_post_form(
+        f"{AUTH_BASE_URL}/token",
+        {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "redirect_uri": REDIRECT_URI,
+            "client_id": CLIENT_ID,
+            "code_verifier": code_verifier,
+        },
+        _TOKEN_HEADERS,
+    )
+
+
+def exchange_oauth_redirect(
+    redirect_or_code: str,
+    code_verifier: str,
+    *,
+    expected_state: str | None = None,
+) -> dict[str, Any]:
+    """Validate redirect, exchange authorization code, return token response (sync)."""
+    redirect_state = parse_oauth_redirect_state(redirect_or_code)
+    if expected_state and redirect_state and redirect_state != expected_state:
+        msg = "OAuth state does not match this login attempt"
+        raise OAuthError(msg)
+    auth_code = parse_authorization_code(redirect_or_code)
+    return exchange_authorization_code(auth_code, code_verifier)
+
+
+def credentials_from_oauth(
+    token_response: dict[str, Any],
+    device_id: str | None = None,
+    *,
+    device_unique_id: str | None = None,
+    device_type: str | None = None,
+) -> dict[str, Any]:
+    """Fetch gRPC session keys for a Sony IoT device and build credentials (sync)."""
+    access_token = token_response["access_token"]
+    resolved_device_id = device_id
+    if not resolved_device_id:
+        devices_response = get_devices(access_token)
+        devices = devices_response.get("devices", [])
+        resolved_device_id = select_device(
+            devices,
+            device_type=device_type,
+            device_unique_id=device_unique_id,
+        )["device_id"]
+    session_keys = get_session_keys(resolved_device_id, access_token)
+    session_keys.setdefault("device_id", resolved_device_id)
+    return build_credentials_bundle(session_keys, token_response)
+
+
+def complete_oauth_flow(
+    redirect_or_code: str,
+    code_verifier: str,
+    *,
+    expected_state: str | None = None,
+    device_id: str | None = None,
+    device_unique_id: str | None = None,
+    device_type: str | None = None,
+) -> dict[str, Any]:
+    """Complete Sony OAuth and fetch gRPC session keys (sync)."""
+    token_response = exchange_oauth_redirect(
+        redirect_or_code,
+        code_verifier,
+        expected_state=expected_state,
+    )
+    return credentials_from_oauth(
+        token_response,
+        device_id=device_id,
+        device_unique_id=device_unique_id,
+        device_type=device_type,
+    )
 
 
 async def async_exchange_authorization_code(
