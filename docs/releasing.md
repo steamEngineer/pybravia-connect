@@ -1,7 +1,9 @@
 # Releasing
 
-1. Bump `__version__` in `src/pybravia_connect/__init__.py` (single source of truth).
-2. Move `[Unreleased]` notes into a new `CHANGELOG.md` section for that version.
+1. Bump `__version__` in `src/pybravia_connect/__init__.py` (single source of truth)
+   and the pin in `tests/test_smoke.py` (`test_version`).
+2. Move `[Unreleased]` notes into a new `CHANGELOG.md` section for that version
+   (and update the compare links at the bottom of the file).
 3. Commit, push to `main`, then tag and push:
    ```bash
    git tag vX.Y.ZaN
