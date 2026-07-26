@@ -32,10 +32,10 @@ Requires Python 3.12+.
 pip install pybravia-connect
 ```
 
-`bravia-connect` is a reserved PyPI alias for the same release
-(`pip install bravia-connect` installs `pybravia-connect` at the matching
-version). Prefer the canonical name above; the import package is always
-`pybravia_connect`.
+`bravia-connect` and `bravaconnect` are reserved PyPI aliases for the same
+release (`pip install bravia-connect` or `pip install bravaconnect` installs
+`pybravia-connect` at the matching version). Prefer the canonical name above;
+the import package is always `pybravia_connect`.
 
 For TV app-list and icon reads (AES-GCM decrypt):
 

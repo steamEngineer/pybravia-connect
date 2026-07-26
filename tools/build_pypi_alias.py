@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build the bravia-connect PyPI alias wheel/sdist into dist/.
+"""Build PyPI alias wheels/sdists into dist/.
 
-Reads ``__version__`` from ``src/pybravia_connect/__init__.py`` and generates a
-dependency-only package that pins ``pybravia-connect==<version>``. No importable
-code — install name only; import remains ``pybravia_connect``.
+Reads ``__version__`` from ``src/pybravia_connect/__init__.py`` and generates
+dependency-only packages that pin ``pybravia-connect==<version>``. No importable
+code — install names only; import remains ``pybravia_connect``.
 """
 
 from __future__ import annotations
@@ -20,8 +20,7 @@ from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 INIT_PATH = ROOT / "src" / "pybravia_connect" / "__init__.py"
-ALIAS_README = ROOT / "alias" / "bravia-connect" / "README.md"
-ALIAS_NAME = "bravia-connect"
+ALIASES = ("bravia-connect", "bravaconnect")
 CANONICAL_NAME = "pybravia-connect"
 
 _VERSION_RE = re.compile(r'^__version__\s*=\s*["\']([^"\']+)["\']', re.M)
@@ -35,16 +34,28 @@ def read_version() -> str:
     return match.group(1)
 
 
-def write_alias_project(project_dir: Path, version: str) -> None:
+def normalized_prefix(name: str) -> str:
+    """PEP 503-ish filename prefix: hyphens become underscores."""
+    return name.replace("-", "_")
+
+
+def alias_readme(name: str) -> Path:
+    path = ROOT / "alias" / name / "README.md"
+    if not path.is_file():
+        raise SystemExit(f"Missing alias README: {path}")
+    return path
+
+
+def write_alias_project(project_dir: Path, *, name: str, version: str) -> None:
     project_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(ALIAS_README, project_dir / "README.md")
+    shutil.copyfile(alias_readme(name), project_dir / "README.md")
     pyproject = f"""\
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "{ALIAS_NAME}"
+name = "{name}"
 version = "{version}"
 description = "PyPI alias for {CANONICAL_NAME} (same library; import pybravia_connect)"
 readme = "README.md"
@@ -70,41 +81,55 @@ include = ["README.md", "pyproject.toml"]
     (project_dir / "pyproject.toml").write_text(pyproject, encoding="utf-8")
 
 
-def build_alias(*, outdir: Path, version: str) -> list[Path]:
+def collect_alias_artifacts(outdir: Path, name: str) -> list[Path]:
+    prefixes = (name, normalized_prefix(name))
+    found = sorted(
+        p
+        for p in outdir.iterdir()
+        if any(p.name.startswith(f"{prefix}-") for prefix in prefixes)
+    )
+    if not found:
+        raise SystemExit(f"No alias artifacts for {name!r} in {outdir}")
+    return found
+
+
+def build_alias(*, name: str, outdir: Path, version: str) -> list[Path]:
     outdir.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="bravia-connect-alias-") as tmp:
+    with tempfile.TemporaryDirectory(prefix=f"{normalized_prefix(name)}-alias-") as tmp:
         project_dir = Path(tmp) / "alias"
-        write_alias_project(project_dir, version)
+        write_alias_project(project_dir, name=name, version=version)
         subprocess.run(
             [sys.executable, "-m", "build", "--outdir", str(outdir.resolve())],
             cwd=project_dir,
             check=True,
         )
-    # Wheel uses normalized underscores; sdist keeps the project name with hyphens.
-    unique = sorted(
-        p
-        for p in outdir.iterdir()
-        if p.name.startswith("bravia_connect") or p.name.startswith("bravia-connect")
-    )
-    if not unique:
-        raise SystemExit(f"No alias artifacts found in {outdir}")
-    return unique
+    return collect_alias_artifacts(outdir, name)
 
 
-def assert_alias_metadata(wheel: Path, version: str) -> None:
+def assert_alias_metadata(wheel: Path, *, name: str, version: str) -> None:
     with ZipFile(wheel) as zf:
         meta_name = next(n for n in zf.namelist() if n.endswith(".dist-info/METADATA"))
         msg = email.message_from_bytes(zf.read(meta_name))
-    if msg["Name"] != ALIAS_NAME:
-        raise SystemExit(f"Alias Name={msg['Name']!r}, expected {ALIAS_NAME!r}")
+    if msg["Name"] != name:
+        raise SystemExit(f"Alias Name={msg['Name']!r}, expected {name!r}")
     if msg["Version"] != version:
         raise SystemExit(f"Alias Version={msg['Version']!r}, expected {version!r}")
     requires = msg.get_all("Requires-Dist") or []
     expected_pin = f"{CANONICAL_NAME}=={version}"
     if not any(r.split(";")[0].strip() == expected_pin for r in requires):
         raise SystemExit(
-            f"Alias missing Requires-Dist {expected_pin!r}; got {requires!r}"
+            f"Alias {name!r} missing Requires-Dist {expected_pin!r}; got {requires!r}"
         )
+
+
+def build_all_aliases(*, outdir: Path, version: str) -> list[Path]:
+    all_artifacts: list[Path] = []
+    for name in ALIASES:
+        artifacts = build_alias(name=name, outdir=outdir, version=version)
+        wheel = next(p for p in artifacts if p.suffix == ".whl")
+        assert_alias_metadata(wheel, name=name, version=version)
+        all_artifacts.extend(artifacts)
+    return all_artifacts
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -123,16 +148,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     version = read_version()
     if args.check_only:
-        with tempfile.TemporaryDirectory(prefix="bravia-connect-alias-check-") as tmp:
-            artifacts = build_alias(outdir=Path(tmp), version=version)
-            wheel = next(p for p in artifacts if p.suffix == ".whl")
-            assert_alias_metadata(wheel, version)
-        print(f"OK: {ALIAS_NAME}=={version} -> {CANONICAL_NAME}=={version}")
+        with tempfile.TemporaryDirectory(prefix="pypi-alias-check-") as tmp:
+            build_all_aliases(outdir=Path(tmp), version=version)
+        for name in ALIASES:
+            print(f"OK: {name}=={version} -> {CANONICAL_NAME}=={version}")
         return 0
 
-    artifacts = build_alias(outdir=args.outdir, version=version)
-    wheel = next(p for p in artifacts if p.suffix == ".whl")
-    assert_alias_metadata(wheel, version)
+    artifacts = build_all_aliases(outdir=args.outdir, version=version)
     for path in artifacts:
         print(path)
     return 0

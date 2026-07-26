@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a11] - 2026-07-26
+
+### Added
+
+- Additional reserved PyPI alias `bravaconnect` (same version-locked pin as
+  `bravia-connect`).
+
 ## [0.1.0a10] - 2026-07-26
 
 ### Added
@@ -104,7 +111,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public alpha: OAuth credentials helpers, connect/handshake,
   `StartNotifyStates`, `GetCapabilities`, and `ExecCommandWithAuth`.
 
-[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a10...HEAD
+[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a11...HEAD
+[0.1.0a11]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a10...v0.1.0a11
 [0.1.0a10]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a9...v0.1.0a10
 [0.1.0a9]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a8...v0.1.0a9
 [0.1.0a8]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a7...v0.1.0a8
