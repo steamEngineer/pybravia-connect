@@ -31,7 +31,7 @@ _EXPECTED_EXPORTS = (
 
 def test_version() -> None:
     assert isinstance(pybravia_connect.__version__, str)
-    assert pybravia_connect.__version__ == "0.1.0a11"
+    assert pybravia_connect.__version__ == "0.1.0a12"
 
 
 def test_public_exports() -> None:
