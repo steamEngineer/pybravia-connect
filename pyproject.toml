@@ -53,6 +53,9 @@ Repository = "https://github.com/steamEngineer/pybravia-connect"
 Issues = "https://github.com/steamEngineer/pybravia-connect/issues"
 Changelog = "https://github.com/steamEngineer/pybravia-connect/blob/main/CHANGELOG.md"
 
+[project.scripts]
+bravia-connect-keys = "pybravia_connect.cli.get_session_keys:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

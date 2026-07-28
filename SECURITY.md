@@ -25,8 +25,8 @@ Treat these as **secrets** (never commit, never share in issues or logs):
 
 - Session-key bundle fields: `hmac_key`, `session_key`, and related key material
 - OAuth `access_token` and `refresh_token`
-- Credential JSON files produced by `tools/get_session_keys.py` (for example
-  `session_keys.json`)
+- Credential JSON files produced by `bravia-connect-keys` (or
+  `tools/get_session_keys.py`) (for example `session_keys.json`)
 - Browser HAR files that may contain redirect URLs or tokens (`*.har`)
 
 These are **public client identifiers** embedded in the library (not user

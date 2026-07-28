@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Console script `bravia-connect-keys` (Sony Seeds OAuth → credentials JSON) in
+  the installable package. Available to PyPI consumers after the next release;
+  until then use an editable install or the `tools/get_session_keys.py` shim.
+- `examples/read_capabilities.py` — env-driven read-only first connect
+  (`BRAVIA_HOST`, `BRAVIA_CREDENTIALS`).
+- `CONTRIBUTING.md` and expanded README credentials walkthrough / JSON shape.
+
 ## [0.1.0a11] - 2026-07-26
 
 ### Added
