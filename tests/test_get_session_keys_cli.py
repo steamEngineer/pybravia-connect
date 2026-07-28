@@ -1,17 +1,16 @@
-"""Tests for tools/get_session_keys.py helpers."""
+"""Tests for pybravia_connect.cli.get_session_keys helpers."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
-import sys
 
 import pytest
 
-_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_ROOT / "tools"))
-
-from get_session_keys import extract_ssh_app_redirect_from_har, main  # noqa: E402
+from pybravia_connect.cli.get_session_keys import (
+    extract_ssh_app_redirect_from_har,
+    main,
+)
 
 SSH_APP = "ssh-app://signin?code=abc123&state=state456"
 
