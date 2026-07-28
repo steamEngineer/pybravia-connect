@@ -175,16 +175,20 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(auth_url)
         print(
-            "\n2. Sign in with your Sony account for "
+            "\n2. BEFORE signing in: open DevTools (Chrome/Firefox: F12) → "
+            "Network. Optionally enable Preserve log."
+        )
+        print(
+            "\n3. Sign in with your Sony account for "
             "'Home Entertainment & Sound Service'."
         )
         print(
-            "\n3. After login Chrome tries to open ssh-app://signin?code=... "
+            "\n4. After login the browser tries to open ssh-app://signin?code=... "
             "and fails on desktop — the URL is NOT in the address bar."
         )
         print(
-            "   In Chrome DevTools (F12) → Network → filter signin → copy the "
-            "ssh-app://signin?... Request URL or Location header, or just code=."
+            "   In Network → filter signin → copy the ssh-app://signin?... "
+            "Request URL or Location header, or just code=."
         )
         print(f"\n   Expected state: {state}")
         print(f"   Code verifier (save this): {code_verifier}\n")

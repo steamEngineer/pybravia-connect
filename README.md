@@ -131,13 +131,15 @@ bravia-connect-keys --login --open -o /tmp/session_keys.json
 
 1. Run the command above. It prints an authorize URL (and opens it with
    `--open`). Use an incognito/private window if the page is blank.
-2. Sign in with your Sony account for **Home Entertainment & Sound Service**.
-3. After login, the browser tries to open `ssh-app://signin?code=…`. On desktop
+2. **Before** entering your username or password, open DevTools
+   (Chrome/Firefox: F12 or Ctrl+Shift+I) → **Network**. Optionally enable
+   **Preserve log** so the redirect is not cleared on navigation.
+3. Sign in with your Sony account for **Home Entertainment & Sound Service**.
+4. After login, the browser tries to open `ssh-app://signin?code=…`. On desktop
    that fails — the redirect is **not** in the address bar.
-4. In Chrome DevTools (F12) → **Network** → filter `signin` → copy the
-   `ssh-app://signin?…` Request URL or Location header, or just the `code=`
-   value.
-5. Paste that into the CLI prompt. With `-o`, the CLI writes the credentials
+5. In the Network panel, filter `signin` → copy the `ssh-app://signin?…`
+   Request URL or Location header, or just the `code=` value.
+6. Paste that into the CLI prompt. With `-o`, the CLI writes the credentials
    JSON.
 
 See `bravia-connect-keys --help` for `--code`, `--token`, `--refresh`, and
