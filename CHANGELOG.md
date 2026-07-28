@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0a12] - 2026-07-27
+
 ### Added
 
 - Console script `bravia-connect-keys` (Sony Seeds OAuth → credentials JSON) in
-  the installable package. Available to PyPI consumers after the next release;
-  until then use an editable install or the `tools/get_session_keys.py` shim.
+  the installable package. `tools/get_session_keys.py` remains a thin shim.
 - `examples/read_capabilities.py` — env-driven read-only first connect
   (`BRAVIA_HOST`, `BRAVIA_CREDENTIALS`).
 - `CONTRIBUTING.md` and expanded README credentials walkthrough / JSON shape.
@@ -120,7 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public alpha: OAuth credentials helpers, connect/handshake,
   `StartNotifyStates`, `GetCapabilities`, and `ExecCommandWithAuth`.
 
-[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a11...HEAD
+[Unreleased]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a12...HEAD
+[0.1.0a12]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a11...v0.1.0a12
 [0.1.0a11]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a10...v0.1.0a11
 [0.1.0a10]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a9...v0.1.0a10
 [0.1.0a9]: https://github.com/steamEngineer/pybravia-connect/compare/v0.1.0a8...v0.1.0a9
